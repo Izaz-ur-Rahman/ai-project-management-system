@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
+const authRoutes = require("./authRoutes");
 const router = express.Router();
 
 router.get("/health", (req, res) => {
@@ -15,5 +15,6 @@ router.get("/health", (req, res) => {
         database: databaseStatus,
     });
 });
+router.use("/auth", authRoutes);
 
 module.exports = router;
