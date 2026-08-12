@@ -139,10 +139,30 @@ const login = async (req, res) => {
 };
 
 const getCurrentUser = async (req, res) => {
-    res.status(501).json({
-        success: false,
-        message: "Current user endpoint not implemented yet",
-    });
+    try {
+        return res.status(200).json({
+            success: true,
+            message: "Current user retrieved successfully",
+            data: {
+                user: {
+                    id: req.user._id,
+                    name: req.user.name,
+                    email: req.user.email,
+                    role: req.user.role,
+                    avatar: req.user.avatar,
+                    createdAt: req.user.createdAt,
+                    updatedAt: req.user.updatedAt,
+                },
+            },
+        });
+    } catch (error) {
+        console.error("Get current user error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
 };
 
 module.exports = {
