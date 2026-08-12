@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const authRoutes = require("./authRoutes");
 const authorize = require("../middleware/roleMiddleware");
 const authenticate = require("../middleware/authMiddleware");
+const projectRoutes = require("./projectRoutes");
 const router = express.Router();
 
 router.get("/health", (req, res) => {
@@ -18,6 +19,6 @@ router.get("/health", (req, res) => {
     });
 });
 router.use("/auth", authRoutes);
-
+router.use("/projects", projectRoutes);
 
 module.exports = router;
