@@ -58,11 +58,37 @@ const createProject = async (req, res) => {
     }
 };
 
+// get projects for the logged-in user, including projects they own and projects they are a member of
 const getProjects = async (req, res) => {
-    return res.status(501).json({
-        success: false,
-        message: "Get projects endpoint not implemented yet",
-    });
+    try {
+        const userId = req.user._id;
+
+        const projects = await Project.find({
+            $or: [
+                { owner: userId },
+                { members: userId },
+            ],
+        })
+            .populate("owner", "name email")
+            .populate("members", "name email")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            message: "Projects retrieved successfully",
+            data: {
+                projects,
+                count: projects.length,
+            },
+        });
+    } catch (error) {
+        console.error("Get projects error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
 };
 
 const getProject = async (req, res) => {
