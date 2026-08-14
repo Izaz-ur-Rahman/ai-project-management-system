@@ -65,6 +65,7 @@ const getProjects = async (req, res) => {
         const userId = req.user._id;
 
         const projects = await Project.find({
+             isDeleted: false,
             $or: [
                 { owner: userId },
                 { members: userId },
@@ -110,6 +111,7 @@ const getProject = async (req, res) => {
 
         const project = await Project.findOne({
             _id: id,
+             isDeleted: false,
             $or: [
                 { owner: userId },
                 { members: userId },
@@ -227,9 +229,10 @@ const deleteProject = async (req, res) => {
     try {
         const project = req.project;
 
-        await Project.deleteOne({
-            _id: project._id,
-        });
+        project.isDeleted = true;
+        project.deletedAt = new Date();
+
+        await project.save();
 
         return res.status(200).json({
             success: true,
