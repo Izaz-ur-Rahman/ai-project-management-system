@@ -140,11 +140,108 @@ const getProject = async (req, res) => {
         });
     }
 };
+
+// update a project by ID, ensuring the logged-in user is the owner of the project
 const updateProject = async (req, res) => {
-    return res.status(501).json({
-        success: false,
-        message: "Update project endpoint not implemented yet",
-    });
+    try {
+        const { id } = req.params;
+
+        // Validate MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID",
+            });
+        }
+
+        const {
+            name,
+            description,
+            status,
+            priority,
+            startDate,
+            dueDate,
+        } = req.body;
+
+        // Find project owned by current user
+        const project = await Project.findOne({
+            _id: id,
+            owner: req.user._id,
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found",
+            });
+        }
+
+        // Validate name if provided
+        if (name !== undefined) {
+            if (!name.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Project name cannot be empty",
+                });
+            }
+
+            project.name = name.trim();
+        }
+
+        // Update optional fields
+        if (description !== undefined) {
+            project.description = description.trim();
+        }
+
+        if (status !== undefined) {
+            project.status = status;
+        }
+
+        if (priority !== undefined) {
+            project.priority = priority;
+        }
+
+        if (startDate !== undefined) {
+            project.startDate = startDate;
+        }
+
+        if (dueDate !== undefined) {
+            project.dueDate = dueDate;
+        }
+
+        // Validate date range
+        if (
+            project.startDate &&
+            project.dueDate &&
+            new Date(project.dueDate) < new Date(project.startDate)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Due date cannot be earlier than start date",
+            });
+        }
+
+        await project.save();
+
+        const updatedProject = await Project.findById(project._id)
+            .populate("owner", "name email")
+            .populate("members", "name email");
+
+        return res.status(200).json({
+            success: true,
+            message: "Project updated successfully",
+            data: {
+                project: updatedProject,
+            },
+        });
+    } catch (error) {
+        console.error("Update project error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
 };
 
 const deleteProject = async (req, res) => {
