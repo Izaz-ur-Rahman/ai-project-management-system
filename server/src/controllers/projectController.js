@@ -1,5 +1,5 @@
 const Project = require("../models/Project");   
-
+const mongoose = require("mongoose");
 const createProject = async (req, res) => {
     try {
         const {
@@ -91,13 +91,55 @@ const getProjects = async (req, res) => {
     }
 };
 
-const getProject = async (req, res) => {
-    return res.status(501).json({
-        success: false,
-        message: "Get project endpoint not implemented yet",
-    });
-};
 
+// get a single project by ID, ensuring the logged-in user is either the owner or a member of the project
+const getProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID",
+            });
+        }
+
+        const userId = req.user._id;
+
+        const project = await Project.findOne({
+            _id: id,
+            $or: [
+                { owner: userId },
+                { members: userId },
+            ],
+        })
+            .populate("owner", "name email")
+            .populate("members", "name email");
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Project retrieved successfully",
+            data: {
+                project,
+            },
+        });
+    } catch (error) {
+        console.error("Get project error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
 const updateProject = async (req, res) => {
     return res.status(501).json({
         success: false,
