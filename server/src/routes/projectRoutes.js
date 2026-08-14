@@ -1,5 +1,7 @@
 const express = require("express");
-
+const {
+    authorizeProjectOwner,
+} = require("../middleware/projectAuthorization");
 const {
     createProject,
     getProjects,
@@ -18,8 +20,17 @@ router.get("/", authenticate, getProjects);
 
 router.get("/:id", authenticate, getProject);
 
-router.put("/:id", authenticate, updateProject);
-
-router.delete("/:id", authenticate, deleteProject);
+router.put(
+    "/:id",
+    authenticate,
+    authorizeProjectOwner,
+    updateProject
+);
+router.delete(
+    "/:id",
+    authenticate,
+    authorizeProjectOwner,
+    deleteProject
+);
 
 module.exports = router;

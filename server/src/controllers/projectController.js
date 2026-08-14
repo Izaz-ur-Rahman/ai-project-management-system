@@ -1,5 +1,6 @@
 const Project = require("../models/Project");   
 const mongoose = require("mongoose");
+
 const createProject = async (req, res) => {
     try {
         const {
@@ -144,15 +145,7 @@ const getProject = async (req, res) => {
 // update a project by ID, ensuring the logged-in user is the owner of the project
 const updateProject = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        // Validate MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid project ID",
-            });
-        }
+        const project = req.project;
 
         const {
             name,
@@ -162,19 +155,6 @@ const updateProject = async (req, res) => {
             startDate,
             dueDate,
         } = req.body;
-
-        // Find project owned by current user
-        const project = await Project.findOne({
-            _id: id,
-            owner: req.user._id,
-        });
-
-        if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found",
-            });
-        }
 
         // Validate name if provided
         if (name !== undefined) {
@@ -243,31 +223,9 @@ const updateProject = async (req, res) => {
         });
     }
 };
-
 const deleteProject = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        // Validate MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid project ID",
-            });
-        }
-
-        // Only project owner can delete
-        const project = await Project.findOne({
-            _id: id,
-            owner: req.user._id,
-        });
-
-        if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found",
-            });
-        }
+        const project = req.project;
 
         await Project.deleteOne({
             _id: project._id,
