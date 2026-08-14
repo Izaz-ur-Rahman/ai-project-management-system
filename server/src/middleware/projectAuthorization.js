@@ -14,10 +14,11 @@ const authorizeProjectOwner = async (req, res, next) => {
         }
 
         // Find project owned by authenticated user
-        const project = await Project.findOne({
-            _id: id,
-            owner: req.user._id,
-        });
+       const project = await Project.findOne({
+    _id: id,
+    owner: req.user._id,
+    isDeleted: false,
+});
 
         if (!project) {
             return res.status(404).json({
