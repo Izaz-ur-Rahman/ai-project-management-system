@@ -245,12 +245,47 @@ const updateProject = async (req, res) => {
 };
 
 const deleteProject = async (req, res) => {
-    return res.status(501).json({
-        success: false,
-        message: "Delete project endpoint not implemented yet",
-    });
-};
+    try {
+        const { id } = req.params;
 
+        // Validate MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID",
+            });
+        }
+
+        // Only project owner can delete
+        const project = await Project.findOne({
+            _id: id,
+            owner: req.user._id,
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found",
+            });
+        }
+
+        await Project.deleteOne({
+            _id: project._id,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Project deleted successfully",
+        });
+    } catch (error) {
+        console.error("Delete project error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
 module.exports = {
     createProject,
     getProjects,
