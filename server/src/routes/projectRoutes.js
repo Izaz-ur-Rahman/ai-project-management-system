@@ -1,7 +1,9 @@
 const express = require("express");
+
 const {
     authorizeProjectOwner,
 } = require("../middleware/projectAuthorization");
+
 const {
     createProject,
     getProjects,
@@ -14,11 +16,27 @@ const authenticate = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/", authenticate, createProject);
 
-router.get("/", authenticate, getProjects);
+router.post(
+    "/",
+    authenticate,
+    createProject
+);
 
-router.get("/:id", authenticate, getProject);
+
+router.get(
+    "/",
+    authenticate,
+    getProjects
+);
+
+
+router.get(
+    "/:id",
+    authenticate,
+    getProject
+);
+
 
 router.put(
     "/:id",
@@ -26,11 +44,14 @@ router.put(
     authorizeProjectOwner,
     updateProject
 );
+
+
 router.delete(
     "/:id",
     authenticate,
     authorizeProjectOwner,
     deleteProject
 );
+
 
 module.exports = router;
