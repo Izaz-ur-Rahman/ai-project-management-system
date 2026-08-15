@@ -13,13 +13,14 @@ const authorizeProjectOwner = async (req, res, next) => {
             });
         }
 
-        // Find project owned by authenticated user
-       const project = await Project.findOne({
-    _id: id,
-    owner: req.user._id,
-    isDeleted: false,
-});
+        // Find an active project owned by the authenticated user
+        const project = await Project.findOne({
+            _id: id,
+            owner: req.user._id,
+            isDeleted: false,
+        });
 
+        // Project does not exist or user is not the owner
         if (!project) {
             return res.status(404).json({
                 success: false,
@@ -27,7 +28,7 @@ const authorizeProjectOwner = async (req, res, next) => {
             });
         }
 
-        // Attach project to request
+        // Attach authorized project to request
         req.project = project;
 
         next();
