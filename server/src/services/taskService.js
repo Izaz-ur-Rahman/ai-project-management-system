@@ -97,9 +97,22 @@ const createTask = async ({
  * Get tasks accessible to the authenticated user
  */
 const getTasks = async (userId) => {
+    const projects = await Project.find({
+        isDeleted: false,
+        $or: [
+            { owner: userId },
+            { members: userId },
+        ],
+    }).select("_id");
+
+    const projectIds = projects.map(
+        (project) => project._id
+    );
+
     const tasks = await Task.find({
         isDeleted: false,
         $or: [
+            { project: { $in: projectIds } },
             { createdBy: userId },
             { assignedTo: userId },
         ],
@@ -116,30 +129,24 @@ const getTasks = async (userId) => {
 /**
  * Get a single task accessible to the authenticated user
  */
-const getTaskById = async (taskId, userId) => {
-    if (!mongoose.Types.ObjectId.isValid(taskId)) {
-        throw new AppError("Invalid task ID", 400);
-    }
-
-    const task = await Task.findOne({
-        _id: taskId,
-        isDeleted: false,
-        $or: [
-            { createdBy: userId },
-            { assignedTo: userId },
-        ],
-    })
-        .populate("project", "name status priority")
-        .populate("assignedTo", "name email")
-        .populate("createdBy", "name email");
-
-    if (!task) {
-        throw new AppError("Task not found", 404);
-    }
+const getTaskById = async (task) => {
+    await task.populate([
+        {
+            path: "project",
+            select: "name status priority",
+        },
+        {
+            path: "assignedTo",
+            select: "name email",
+        },
+        {
+            path: "createdBy",
+            select: "name email",
+        },
+    ]);
 
     return task;
 };
-
 
 /**
  * Update a task
