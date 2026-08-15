@@ -1,7 +1,7 @@
 const app = require("./src/app");
 const env = require("./src/config/env");
 const connectDatabase = require("./src/config/database");
-
+const errorMiddleware =  require("./src/middleware/errorMiddleware");
 const startServer = async () => {
     await connectDatabase();
 
@@ -11,5 +11,5 @@ const startServer = async () => {
         );
     });
 };
-
+app.use(errorMiddleware);
 startServer();
