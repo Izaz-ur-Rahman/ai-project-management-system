@@ -4,6 +4,7 @@ const authRoutes = require("./authRoutes");
 const authorize = require("../middleware/roleMiddleware");
 const authenticate = require("../middleware/authMiddleware");
 const projectRoutes = require("./projectRoutes");
+const taskRoutes = require("./routes/taskRoutes");
 const router = express.Router();
 
 router.get("/health", (req, res) => {
@@ -20,5 +21,6 @@ router.get("/health", (req, res) => {
 });
 router.use("/auth", authRoutes);
 router.use("/projects", projectRoutes);
+router.use("/tasks", taskRoutes);
 
 module.exports = router;
