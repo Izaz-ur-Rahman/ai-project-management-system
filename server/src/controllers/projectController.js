@@ -1,45 +1,11 @@
-const Project = require("../models/Project");   
-const mongoose = require("mongoose");
+const projectService = require("../services/projectService");
+
 
 const createProject = async (req, res) => {
     try {
-        const {
-            name,
-            description,
-            status,
-            priority,
-            startDate,
-            dueDate,
-        } = req.body;
-
-        // Validate required field
-        if (!name || !name.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Project name is required",
-            });
-        }
-
-        // Validate date range
-        if (
-            startDate &&
-            dueDate &&
-            new Date(dueDate) < new Date(startDate)
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Due date cannot be earlier than start date",
-            });
-        }
-
-        const project = await Project.create({
-            name: name.trim(),
-            description: description?.trim(),
-            owner: req.user._id,
-            status,
-            priority,
-            startDate,
-            dueDate,
+        const project = await projectService.createProject({
+            ...req.body,
+            ownerId: req.user._id,
         });
 
         return res.status(201).json({
@@ -52,28 +18,22 @@ const createProject = async (req, res) => {
     } catch (error) {
         console.error("Create project error:", error);
 
-        return res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Internal server error",
+            message:
+                error.statusCode
+                    ? error.message
+                    : "Internal server error",
         });
     }
 };
 
-// get projects for the logged-in user, including projects they own and projects they are a member of
+
 const getProjects = async (req, res) => {
     try {
-        const userId = req.user._id;
-
-        const projects = await Project.find({
-             isDeleted: false,
-            $or: [
-                { owner: userId },
-                { members: userId },
-            ],
-        })
-            .populate("owner", "name email")
-            .populate("members", "name email")
-            .sort({ createdAt: -1 });
+        const projects = await projectService.getProjects(
+            req.user._id
+        );
 
         return res.status(200).json({
             success: true,
@@ -86,46 +46,23 @@ const getProjects = async (req, res) => {
     } catch (error) {
         console.error("Get projects error:", error);
 
-        return res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Internal server error",
+            message:
+                error.statusCode
+                    ? error.message
+                    : "Internal server error",
         });
     }
 };
 
 
-// get a single project by ID, ensuring the logged-in user is either the owner or a member of the project
 const getProject = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        // Validate MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid project ID",
-            });
-        }
-
-        const userId = req.user._id;
-
-        const project = await Project.findOne({
-            _id: id,
-             isDeleted: false,
-            $or: [
-                { owner: userId },
-                { members: userId },
-            ],
-        })
-            .populate("owner", "name email")
-            .populate("members", "name email");
-
-        if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found",
-            });
-        }
+        const project = await projectService.getProjectById(
+            req.params.id,
+            req.user._id
+        );
 
         return res.status(200).json({
             success: true,
@@ -137,77 +74,24 @@ const getProject = async (req, res) => {
     } catch (error) {
         console.error("Get project error:", error);
 
-        return res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Internal server error",
+            message:
+                error.statusCode
+                    ? error.message
+                    : "Internal server error",
         });
     }
 };
 
-// update a project by ID, ensuring the logged-in user is the owner of the project
+
 const updateProject = async (req, res) => {
     try {
-        const project = req.project;
-
-        const {
-            name,
-            description,
-            status,
-            priority,
-            startDate,
-            dueDate,
-        } = req.body;
-
-        // Validate name if provided
-        if (name !== undefined) {
-            if (!name.trim()) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Project name cannot be empty",
-                });
-            }
-
-            project.name = name.trim();
-        }
-
-        // Update optional fields
-        if (description !== undefined) {
-            project.description = description.trim();
-        }
-
-        if (status !== undefined) {
-            project.status = status;
-        }
-
-        if (priority !== undefined) {
-            project.priority = priority;
-        }
-
-        if (startDate !== undefined) {
-            project.startDate = startDate;
-        }
-
-        if (dueDate !== undefined) {
-            project.dueDate = dueDate;
-        }
-
-        // Validate date range
-        if (
-            project.startDate &&
-            project.dueDate &&
-            new Date(project.dueDate) < new Date(project.startDate)
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Due date cannot be earlier than start date",
-            });
-        }
-
-        await project.save();
-
-        const updatedProject = await Project.findById(project._id)
-            .populate("owner", "name email")
-            .populate("members", "name email");
+        const updatedProject =
+            await projectService.updateProject(
+                req.project,
+                req.body
+            );
 
         return res.status(200).json({
             success: true,
@@ -219,20 +103,20 @@ const updateProject = async (req, res) => {
     } catch (error) {
         console.error("Update project error:", error);
 
-        return res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Internal server error",
+            message:
+                error.statusCode
+                    ? error.message
+                    : "Internal server error",
         });
     }
 };
+
+
 const deleteProject = async (req, res) => {
     try {
-        const project = req.project;
-
-        project.isDeleted = true;
-        project.deletedAt = new Date();
-
-        await project.save();
+        await projectService.deleteProject(req.project);
 
         return res.status(200).json({
             success: true,
@@ -241,12 +125,17 @@ const deleteProject = async (req, res) => {
     } catch (error) {
         console.error("Delete project error:", error);
 
-        return res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Internal server error",
+            message:
+                error.statusCode
+                    ? error.message
+                    : "Internal server error",
         });
     }
 };
+
+
 module.exports = {
     createProject,
     getProjects,
