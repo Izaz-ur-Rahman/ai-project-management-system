@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Task = require("../models/Task");
 const Project = require("../models/Project");
+const AppError = require("../utils/AppError");
 
 
 /**
@@ -18,12 +19,10 @@ const createTask = async ({
 }) => {
     // Validate project ID
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
-        const error = new Error("Invalid project ID");
-        error.statusCode = 400;
-        throw error;
+        throw new AppError("Invalid project ID", 400);
     }
 
-    // Find active project
+    // Find active project accessible to the user
     const project = await Project.findOne({
         _id: projectId,
         isDeleted: false,
@@ -34,20 +33,19 @@ const createTask = async ({
     });
 
     if (!project) {
-        const error = new Error(
-            "Project not found or you do not have access to this project"
+        throw new AppError(
+            "Project not found or you do not have access to this project",
+            404
         );
-
-        error.statusCode = 404;
-        throw error;
     }
 
-    // Validate assigned user if provided
+    // Validate assigned user
     if (assignedTo) {
         if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
-            const error = new Error("Invalid assigned user ID");
-            error.statusCode = 400;
-            throw error;
+            throw new AppError(
+                "Invalid assigned user ID",
+                400
+            );
         }
 
         const isProjectMember =
@@ -58,27 +56,23 @@ const createTask = async ({
             );
 
         if (!isProjectMember) {
-            const error = new Error(
-                "Assigned user must be a member of the project"
+            throw new AppError(
+                "Assigned user must be a member of the project",
+                400
             );
-
-            error.statusCode = 400;
-            throw error;
         }
     }
 
-    // Validate task due date against project dates
+    // Validate task due date
     if (
         dueDate &&
         project.startDate &&
         new Date(dueDate) < new Date(project.startDate)
     ) {
-        const error = new Error(
-            "Task due date cannot be earlier than project start date"
+        throw new AppError(
+            "Task due date cannot be earlier than project start date",
+            400
         );
-
-        error.statusCode = 400;
-        throw error;
     }
 
     const task = await Task.create({
@@ -124,9 +118,7 @@ const getTasks = async (userId) => {
  */
 const getTaskById = async (taskId, userId) => {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
-        const error = new Error("Invalid task ID");
-        error.statusCode = 400;
-        throw error;
+        throw new AppError("Invalid task ID", 400);
     }
 
     const task = await Task.findOne({
@@ -142,9 +134,7 @@ const getTaskById = async (taskId, userId) => {
         .populate("createdBy", "name email");
 
     if (!task) {
-        const error = new Error("Task not found");
-        error.statusCode = 404;
-        throw error;
+        throw new AppError("Task not found", 404);
     }
 
     return task;
@@ -165,12 +155,10 @@ const updateTask = async (task, data) => {
 
     if (title !== undefined) {
         if (!title.trim()) {
-            const error = new Error(
-                "Task title cannot be empty"
+            throw new AppError(
+                "Task title cannot be empty",
+                400
             );
-
-            error.statusCode = 400;
-            throw error;
         }
 
         task.title = title.trim();
@@ -205,12 +193,10 @@ const updateTask = async (task, data) => {
             new Date(task.dueDate) <
                 new Date(project.startDate)
         ) {
-            const error = new Error(
-                "Task due date cannot be earlier than project start date"
+            throw new AppError(
+                "Task due date cannot be earlier than project start date",
+                400
             );
-
-            error.statusCode = 400;
-            throw error;
         }
     }
 
