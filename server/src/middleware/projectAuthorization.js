@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
-
+const AppError = require("../utils/AppError");
 const authorizeProjectOwner = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -42,6 +42,41 @@ const authorizeProjectOwner = async (req, res, next) => {
     }
 };
 
+const authorizeProjectMember = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new AppError(
+                "Invalid project ID",
+                400
+            );
+        }
+
+        const project = await Project.findOne({
+            _id: id,
+            isDeleted: false,
+            $or: [
+                { owner: req.user._id },
+                { members: req.user._id },
+            ],
+        });
+
+        if (!project) {
+            throw new AppError(
+                "Project not found",
+                404
+            );
+        }
+
+        req.project = project;
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
 module.exports = {
     authorizeProjectOwner,
+    authorizeProjectMember,
 };
