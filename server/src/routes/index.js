@@ -5,7 +5,7 @@ const authorize = require("../middleware/roleMiddleware");
 const authenticate = require("../middleware/authMiddleware");
 const projectRoutes = require("./projectRoutes");
 const taskRoutes = require("./taskRoutes");
-const projectMemberRoutes = require("./routes/projectMemberRoutes");
+const projectMemberRoutes = require("./projectMemberRoutes");
 const router = express.Router();
 
 router.get("/health", (req, res) => {
