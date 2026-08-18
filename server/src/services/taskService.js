@@ -48,16 +48,22 @@ const createTask = async ({
             );
         }
 
-        const isProjectMember =
-            project.owner.toString() === assignedTo.toString() ||
-            project.members.some(
-                (memberId) =>
-                    memberId.toString() === assignedTo.toString()
-            );
+        // const isProjectMember =
+        //     project.owner.toString() === assignedTo.toString() ||
+        //     project.members.some(
+        //         (memberId) =>
+        //             memberId.toString() === assignedTo.toString()
+        //     );
 
-        if (!isProjectMember) {
+        const isProjectParticipant =
+    project.owner.toString() === assignedTo.toString() ||
+    project.members.some(
+        (memberId) =>
+            memberId.toString() === assignedTo.toString()
+    );
+        if (!isProjectParticipant) {
             throw new AppError(
-                "Assigned user must be a member of the project",
+                "Assigned user must be a participant of the project",
                 400
             );
         }
@@ -75,8 +81,17 @@ const createTask = async ({
         );
     }
 
+    if (!title || !title.trim()) {
+    throw new AppError(
+        "Task title is required",
+        400
+    );
+}
+
     const task = await Task.create({
+        
         title: title?.trim(),
+        
         description: description?.trim(),
         project: projectId,
         assignedTo: assignedTo || null,
