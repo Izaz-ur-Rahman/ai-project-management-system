@@ -380,3 +380,178 @@ Response:
     "success": true,
     "message": "Project deleted successfully"
 }
+
++++++++++++ Project member management api’s  documentation here
+
+#	API Name	Method	URL	Auth	Authorization
+1	Add Project Member	POST	/projects/:id/members	✅ JWT	Project Owner
+2	Get Project Members	GET	/projects/:id/members	✅ JWT	Owner OR Member
+3	Remove Project Member	DELETE	/projects/:id/members/:userId	✅ JWT	Project Owner
+
+-------------- Add project members api here ----------------
+
+1. Add Project Member
+API Name
+Add Project Member
+HTTP Method
+POST
+URL
+http://localhost:5000/api/projects/:id/members
+Example:
+http://localhost:5000/api/projects/68a123456789abcdef123456/members
+Purpose
+Adds an existing user to an existing project.
+Only the project owner can perform this operation.
+The user being added must already exist in the users collection.
+
+Authentication
+✅ Required
+Header:
+Authorization: Bearer YOUR_JWT_TOKEN
+The JWT must belong to the project owner.
+
+Parameters
+URL Parameter
+Parameter	Type	Required	Description
+id	String/ObjectId	Yes	ID of the project
+Request Body
+Parameter	Type	Required	Description
+userId	String/ObjectId	Yes	ID of the user to add
+
+Real request
+Suppose:
+Project ID = 68a123456789abcdef123456
+Ali's User ID = 68a987654321abcdef987654
+Request:
+POST http://localhost:5000/api/projects/68a123456789abcdef123456/members
+Authorization: Bearer eyJhbGciOiJIUzI1Ni...
+Content-Type: application/json
+Body:
+{
+    "userId": "68a987654321abcdef987654"
+}
+
+Successful response
+{
+  "success": true,
+  "message": "Project member added successfully",
+  "data": {
+    "project": {
+      "_id": "6a7f84ccdffca4336ce472f7",
+      "name": "Delete Test Project",
+      "description": "This project is only for testing deletion",
+      "owner": {
+        "_id": "6a7ca3d9bdfe8b6564455bf3",
+        "name": "admin",
+        "email": "admin@gmail.com",
+        "role": "admin"
+      },
+      "members": [
+        {
+          "_id": "6a80aeeb9ed3bbbac7f768b9",
+          "name": "hasnain",
+          "email": "hasnain@gmail.com",
+          "role": "member"
+        },
+        {
+          "_id": "6a80aedb9ed3bbbac7f768b8",
+          "name": "maaz",
+          "email": "maaz@gmail.com",
+          "role": "member"
+        },
+        {
+          "_id": "6a843cd612ae89158668dc32",
+          "name": "Ansar ahmad",
+          "email": "ansar@gmail.com",
+          "role": "member"
+        }
+      ],
+      "status": "planning",
+      "priority": "low",
+      "startDate": null,
+      "dueDate": null,
+      "isDeleted": false,
+      "deletedAt": null,
+      "createdAt": "2026-08-14T21:12:45.000Z",
+      "updatedAt": "2026-08-18T11:07:21.035Z",
+      "__v": 3
+    }
+  }
+}
+-------------- Get project members api here ----------------
+
+2.Get Project Members (CMS) (auth required) 
+Purpose
+Returns the project owner and all members assigned to the project.
+Both the project owner and project members can access this API.
+
+
+End Point: 
+Property	Value
+URL	http://localhost:5000/api/projects/68a123456789abcdef123456/members
+Method	GET
+Authentication	Admin
+Content-Type	application/json
+
+Parameter
+Parameter	Type	Required	Description
+id	String/ObjectId	Yes	ID of the project
+
+Sample response: 
+{
+  "success": true,
+  "message": "Project members retrieved successfully",
+  "data": {
+    "owner": {
+      "_id": "6a7ca3d9bdfe8b6564455bf3",
+      "name": "admin",
+      "email": "admin@gmail.com",
+      "role": "admin"
+    },
+    "members": [
+      {
+        "_id": "6a80aeeb9ed3bbbac7f768b9",
+        "name": "hasnain",
+        "email": "hasnain@gmail.com",
+        "role": "member"
+      },
+      {
+        "_id": "6a80aedb9ed3bbbac7f768b8",
+        "name": "maaz",
+        "email": "maaz@gmail.com",
+        "role": "member"
+      },
+      {
+        "_id": "6a843cd612ae89158668dc32",
+        "name": "Ansar ahmad",
+        "email": "ansar@gmail.com",
+        "role": "member"
+      }
+    ]
+  }
+}
+
+-------------- remove project member api here ----------------
+3.Remove Project Member (CMS) (auth required) 
+Purpose
+Removes a user from the project's members array.
+Only the project owner can remove a member.
+The project owner themselves cannot be removed.
+
+End Point: 
+Property	Value
+URL	https://redberrycorporateapi.ittcomcentre.net/api/contact/list
+Method	DELETE
+Authentication	Admin
+Content-Type	application/json
+
+URL parameters
+Parameter	Type	Required	Description
+id	String/ObjectId	Yes	ID of the project
+userId	String/ObjectId	Yes	ID of the member to remove
+
+Sample response: 
+{
+  "success": true,
+  "message": "Project member removed successfully"
+}
