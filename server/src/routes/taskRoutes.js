@@ -3,7 +3,7 @@ const express = require("express");
 const authenticate = require("../middleware/authMiddleware");
 const {
     authorizeTaskAccess,
-    authorizeTaskModification,
+    authorizeTaskOwnerOrCreator,
 } = require("../middleware/taskAuthorization");
 
 const asyncHandler = require("../utils/asyncHandler");
@@ -49,7 +49,7 @@ router.put(
     "/:id",
     authenticate,
     asyncHandler(authorizeTaskAccess),
-    asyncHandler(authorizeTaskModification),
+    asyncHandler(authorizeTaskOwnerOrCreator),
     asyncHandler(updateTask)
 );
 
@@ -59,7 +59,7 @@ router.delete(
     "/:id",
     authenticate,
     asyncHandler(authorizeTaskAccess),
-    asyncHandler(authorizeTaskModification),
+    asyncHandler(authorizeTaskOwnerOrCreator),
     asyncHandler(deleteTask)
 );
 
