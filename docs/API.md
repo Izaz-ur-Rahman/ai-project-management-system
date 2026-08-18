@@ -540,7 +540,7 @@ The project owner themselves cannot be removed.
 
 End Point: 
 Property	Value
-URL	https://redberrycorporateapi.ittcomcentre.net/api/contact/list
+URL	http://localhost:5000/api/projects/6a7f84ccdffca4336ce472f7/members/6a843cd612ae89158668dc32
 Method	DELETE
 Authentication	Admin
 Content-Type	application/json
@@ -554,4 +554,222 @@ Sample response:
 {
   "success": true,
   "message": "Project member removed successfully"
+}
+
+========================Task module API Documentation=========
+----------------------------create task api here-------------
+
+4.Create Task (CMS) (auth required) 
+Purpose
+Creates a new task inside a project.
+The authenticated user must have access to the project as either:
+Project owner 
+Project member 
+The optional assignedTo user must belong to the project.
+
+End Point: 
+Property	Value
+URL	http://localhost:5000/api/tasks
+Method	POST
+Authentication	Admin
+Content-Type	application/json
+
+
+Sample requst:
+{
+    "title": "Implement Login API",
+    "description": "Create JWT-based login endpoint",
+    "projectId": "6a7f84ccdffca4336ce472f7",
+    "assignedTo": "6a80aeeb9ed3bbbac7f768b9",
+    "status": "todo",
+    "priority": "high",
+    "dueDate": "2026-08-30"
+}
+Sample response: 
+{
+  "success": true,
+  "message": "Task created successfully",
+  "data": {
+    "task": {
+      "_id": "6a84a2446b1fd065fbf0f11f",
+      "title": "Implement Login API",
+      "description": "Create JWT-based login endpoint",
+      "project": {
+        "_id": "6a7f84ccdffca4336ce472f7",
+        "name": "Delete Test Project",
+        "status": "planning",
+        "priority": "low"
+      },
+      "assignedTo": {
+        "_id": "6a80aeeb9ed3bbbac7f768b9",
+        "name": "hasnain",
+        "email": "hasnain@gmail.com"
+      },
+      "createdBy": {
+        "_id": "6a7ca3d9bdfe8b6564455bf3",
+        "name": "admin",
+        "email": "admin@gmail.com"
+      },
+      "status": "todo",
+      "priority": "high",
+      "dueDate": "2026-08-30T00:00:00.000Z",
+      "isDeleted": false,
+      "deletedAt": null,
+      "createdAt": "2026-08-18T18:19:48.759Z",
+      "updatedAt": "2026-08-18T18:19:48.759Z",
+      "__v": 0
+    }
+  }
+}
+----------------------------get all tasks api here------------
+
+5.Get All Accessible Tasks (CMS) (auth required) 
+Purpose
+Returns all active tasks that the authenticated user is allowed to see.
+Your service currently considers:
+Tasks belonging to accessible projects 
+Tasks created by the user 
+Tasks assigned to the user 
+Deleted tasks are excluded.
+
+End Point: 
+Property	Value
+URL	http://localhost:5000/api/tasks
+Method	GET
+Authentication	Admin
+Content-Type	application/json
+
+Sample response: 
+{
+  "success": true,
+  "message": "Tasks retrieved successfully",
+  "data": {
+    "tasks": [
+      {
+        "_id": "6a84a2446b1fd065fbf0f11f",
+        "title": "Implement Login API",
+        "description": "Create JWT-based login endpoint",
+        "project": {
+          "_id": "6a7f84ccdffca4336ce472f7",
+          "name": "Delete Test Project",
+          "status": "planning",
+          "priority": "low"
+        },
+        "assignedTo": {
+          "_id": "6a80aeeb9ed3bbbac7f768b9",
+          "name": "hasnain",
+          "email": "hasnain@gmail.com"
+        },
+        "createdBy": {
+          "_id": "6a7ca3d9bdfe8b6564455bf3",
+          "name": "admin",
+          "email": "admin@gmail.com"
+        },
+        "status": "todo",
+        "priority": "high",
+        "dueDate": "2026-08-30T00:00:00.000Z",
+        "isDeleted": false,
+        "deletedAt": null,
+        "createdAt": "2026-08-18T18:19:48.759Z",
+        "updatedAt": "2026-08-18T18:19:48.759Z",
+        "__v": 0
+      }
+    ],
+    "count": 1
+  }
+}
+
+----------------------------update api here---------------------
+
+6.Update Task (CMS) (auth required) 
+Purpose
+Updates an existing task.
+Currently, only the:
+Project owner 
+Task creator 
+can update it.
+The following fields can be updated:
+title 
+description 
+status 
+priority 
+dueDate
+
+End Point: 
+Property	Value
+URL	http://localhost:5000/api/tasks/6a84a2446b1fd065fbf0f11f
+Method	POST
+Authentication	Admin
+Content-Type	application/json
+ Id will be the task for updating
+
+Parameter	Type	Required	Description
+title	String	No	Updated task title
+description	String	No	Updated description
+status	String	No	todo, in-progress, review, completed
+priority	String	No	low, medium, high, critical
+dueDate	Date	No	Updated deadline
+
+Request Body:
+{
+    "title": "Implement Login API update",
+    "description": "Create JWT-based login endpoint upd",
+    "projectId": "6a7f84ccdffca4336ce472f7",
+    "assignedTo": "6a80aeeb9ed3bbbac7f768b9",
+    "status": "todo",
+    "priority": "high",
+    "dueDate": "2026-08-30"
+}Sample response: 
+{
+  "success": true,
+  "message": "Task updated successfully",
+  "data": {
+    "task": {
+      "_id": "6a84a2446b1fd065fbf0f11f",
+      "title": "Implement Login API update",
+      "description": "Create JWT-based login endpoint upd",
+      "project": {
+        "_id": "6a7f84ccdffca4336ce472f7",
+        "name": "Delete Test Project",
+        "status": "planning",
+        "priority": "low"
+      },
+      "assignedTo": {
+        "_id": "6a80aeeb9ed3bbbac7f768b9",
+        "name": "hasnain",
+        "email": "hasnain@gmail.com"
+      },
+      "createdBy": {
+        "_id": "6a7ca3d9bdfe8b6564455bf3",
+        "name": "admin",
+        "email": "admin@gmail.com"
+      },
+      "status": "todo",
+      "priority": "high",
+      "dueDate": "2026-08-30T00:00:00.000Z",
+      "isDeleted": false,
+      "deletedAt": null,
+      "createdAt": "2026-08-18T18:19:48.759Z",
+      "updatedAt": "2026-08-18T18:25:05.996Z",
+      "__v": 0
+    }
+  }
+}
+----------------------------delete api here---------------------
+7.Delete task (CMS) (auth required) 
+Purpose
+Soft-deletes a task.
+The task is not physically removed from MongoDB.
+
+End Point: 
+Property	Value
+URL	http://localhost:5000/api/tasks/6a84a2446b1fd065fbf0f11f
+Method	DETETE
+Authentication	Admin
+Content-Type	application/json
+
+Sample response: 
+{
+    "success": true,
+    "message": "Task deleted successfully"
 }
